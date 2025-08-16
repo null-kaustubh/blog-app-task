@@ -6,17 +6,18 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginUser } from "@/redux/slices/authSlice";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { TbEye, TbEyeOff } from "react-icons/tb";
 
 export default function SigninPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
     setError,
+    formState: { errors },
   } = useForm<{
     email: string;
     password: string;
@@ -31,7 +32,9 @@ export default function SigninPage() {
     }
 
     if (error) {
-      if (error.toLowerCase().includes("email")) {
+      if (error.toLowerCase().includes("invalid")) {
+        toast.error("Invalid credentials. Please try again.");
+      } else if (error.toLowerCase().includes("email")) {
         setError("email", { message: error });
       } else if (error.toLowerCase().includes("password")) {
         setError("password", { message: error });
@@ -46,56 +49,89 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-6">
-      <h1 className="text-3xl font-bold mb-6">Sign In</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label className="block mb-1">Email</label>
-          <input
-            type="email"
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^\S+@\S+\.\S+$/,
-                message: "Invalid email format",
-              },
-            })}
-            className="w-full p-2 border rounded"
-          />
-          {errors.email && (
-            <p className="text-red-500">{errors.email.message}</p>
-          )}
-        </div>
-        <div>
-          <label className="block mb-1">Password</label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              {...register("password", {
-                required: "Password is required",
-              })}
-              className="w-full p-2 border rounded"
-            />
+    <div className="min-h-screen w-full flex flex-col">
+      {/* Header */}
+      <h1 className="text-lg font-semibold mt-12 text-center">
+        Just Another Blog App
+      </h1>
+
+      {/* Card */}
+      <div className="flex flex-1 flex-col items-center justify-start mt-44">
+        <h2 className="text-3xl text-center font-bold mb-6">Welcome back</h2>
+        <div className="rounded-md border-1 border-neutral-700 p-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm">Email</label>
+              <input
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                    message: "Invalid email format",
+                  },
+                })}
+                className={`w-80 px-3 py-1 text-sm bg-neutral-100/60 rounded-lg border placeholder:text-neutral-500/50`}
+                placeholder="Johndoe@xyz.com"
+              />
+              {errors.email && (
+                <span className="text-xs text-red-500">
+                  {errors.email.message}
+                </span>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm">Password</label>
+              <div className="relative w-80">
+                <input
+                  type={showPass ? "text" : "password"}
+                  placeholder="Password"
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 6,
+                      message: "At least 6 characters",
+                    },
+                  })}
+                  className={`w-full px-3 py-1 pr-10 text-sm bg-neutral-100/60 rounded-lg border placeholder:text-neutral-500/50`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((prev) => !prev)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500/70 hover:text-neutral-900/80 cursor-pointer transition-all"
+                >
+                  {showPass ? <TbEyeOff /> : <TbEye />}
+                </button>
+              </div>
+              {errors.password && (
+                <span className="text-xs text-red-500">
+                  {errors.password.message}
+                </span>
+              )}
+            </div>
             <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-2 top-2 text-sm text-gray-500"
+              type="submit"
+              disabled={isLoading}
+              className="bg-neutral-900 font-medium mt-6 text-neutral-50 w-full py-1.5 rounded-md text-sm flex items-center justify-center gap-3 cursor-pointer transition-all disabled:bg-neutral-900/50 disabled:cursor-not-allowed mb-4"
             >
-              {showPassword ? "Hide" : "Show"}
+              {isLoading ? "Logging in..." : "Login"}
             </button>
-          </div>
-          {errors.password && (
-            <p className="text-red-500">{errors.password.message}</p>
-          )}
+          </form>
         </div>
-        <button
-          type="submit"
-          className="bg-black text-white px-4 py-2 rounded w-full disabled:opacity-50"
-          disabled={isLoading}
-        >
-          {isLoading ? "Logging in..." : "Sign In"}
-        </button>
-      </form>
+
+        {/* Footer */}
+        <p className="text-sm text-neutral-400 mt-6">
+          Don&apos;t have an account?{" "}
+          <span
+            className="text-neutral-900 underline cursor-pointer"
+            onClick={() => router.push("/signup")}
+          >
+            Signup
+          </span>
+        </p>
+      </div>
     </div>
   );
 }

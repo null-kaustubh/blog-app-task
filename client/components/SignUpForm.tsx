@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { RiCheckFill, RiCircleFill } from "react-icons/ri";
 import { TbEye, TbEyeOff } from "react-icons/tb";
+import toast from "react-hot-toast";
 
 type FormData = {
   name: string;
@@ -64,7 +65,11 @@ export default function SignUpForm() {
   const onSubmit = async (data: FormData) => {
     const result = await dispatch(signupUser(data));
     if (signupUser.fulfilled.match(result)) {
+      toast.success("Account created successfully!");
       router.push("/home");
+    } else if (signupUser.rejected.match(result)) {
+      const errorMessage = result.payload || "Signup failed. Please try again.";
+      toast.error(errorMessage as string);
     }
   };
 
@@ -130,6 +135,7 @@ export default function SignUpForm() {
         <label className="text-sm">Password</label>
         <div className="relative w-80">
           <input
+            type={showPass ? "text" : "password"}
             placeholder="Password"
             {...register("password", {
               required: "Password is required",
